@@ -2,27 +2,35 @@ import pygame as pg
 
 pg.init()
 
+
 class Times:
-    def __init__(self, time, position, defaulColor, activeColor) -> None:
+    def __init__(self, time, position, defaultColor, activeColor) -> None:
         self.font = pg.font.SysFont("Ariel", 32)
         self.text = time
         self.position = position
-        self.defaultColor = defaulColor
+        self.defaultColor = defaultColor
         self.activeColor = activeColor
         self.active = False
-        self.time_limit = 30 # seconds
-    
+        self.time_limit = 30  # seconds
+        self.color = self.defaultColor
+
     def draw(self, screen):
-        color = self.activeColor if self.active else self.defaultColor
-        text_surface = self.font.render(self.text, True, color)
+        self.color = (
+            self.activeColor
+            if self.active or self.time_limit == int(self.text)
+            else self.defaultColor
+        )
+        text_surface = self.font.render(self.text, True, self.color)
         screen.blit(text_surface, self.position)
 
     def handleEvent(self, event):
         if event.type == pg.MOUSEBUTTONDOWN:
-            x, y = event.pos 
-            text_rect = self.font.render(self.text, True, self.defaultColor).get_rect(topleft=self.position)
+            x, y = event.pos
+            text_rect = self.font.render(self.text, True, self.defaultColor).get_rect(
+                topleft=self.position
+            )
             self.active = text_rect.collidepoint(x, y)
-            self.time_limit = int(self.text)
+
 
 class SingleWord:
     def __init__(self):
@@ -33,7 +41,7 @@ class SingleWord:
         self.BG = (25, 26, 27)
         self.NEONGREEN = (121, 166, 23)
         self.GRAY = (127, 127, 127)
-        
+
         self.FPS = 60
 
         self.clock = pg.time.Clock()
@@ -51,14 +59,13 @@ class SingleWord:
         self.accuracy = 0
         self.time_left = 0
         self.wpm = 0
-        
-        self.shiftpos = 10 
-        self.time15_pos = (self.WIDTH//2 - 60 - self.shiftpos, self.rect_y + 200)
-        self.time30_pos = (self.WIDTH//2 - 180, self.rect_y + 200)
-        self.time60_pos = (self.WIDTH//2 + 60, self.rect_y + 200)
-        self.time120_pos = (self.WIDTH//2 + 180 , self.rect_y + 200)
 
-      
+        self.shiftpos = 10
+        self.time15_pos = (self.WIDTH // 2 - 180 - self.shiftpos, self.rect_y + 200)
+        self.time30_pos = (self.WIDTH // 2 - 60, self.rect_y + 200)
+        self.time60_pos = (self.WIDTH // 2 + 60, self.rect_y + 200)
+        self.time120_pos = (self.WIDTH // 2 + 180, self.rect_y + 200)
+
     def start_screen(self) -> str:
         running = True
         input_text = ""
@@ -90,20 +97,20 @@ class SingleWord:
                     else:
                         char = event.unicode
                         input_text += char
-                        
+
                 time15.handleEvent(event)
                 time30.handleEvent(event)
                 time60.handleEvent(event)
                 time120.handleEvent(event)
 
             if time15.active:
-                self.time_limit = 15 
-            elif time60.active:
-                self.time_limit = 60 
-            elif time120.active:
-                self.time_limit = 120 
-            else:
+                self.time_limit = 15
+            elif time30.active:
                 self.time_limit = 30
+            elif time60.active:
+                self.time_limit = 60
+            elif time120.active:
+                self.time_limit = 120
 
             input_text_surface = self.font.render(input_text, True, self.WHITE)
             input_text_mar_x = (self.rect_w - input_text_surface.get_width()) // 2
@@ -114,12 +121,14 @@ class SingleWord:
                 input_text_surface,
                 (self.rect_x + input_text_mar_x, self.rect_y + input_text_mar_y),
             )
-            
+
             time15.draw(self.screen)
             time30.draw(self.screen)
             time60.draw(self.screen)
             time120.draw(self.screen)
-            
+            for time in [time15, time30, time60, time120]:
+                time.time_limit = self.time_limit
+                time.draw(self.screen)
             pg.draw.rect(self.screen, self.NEONGREEN, self.input_rect, 2, 3)
             self.clock.tick(self.FPS)
             pg.display.flip()
@@ -133,7 +142,7 @@ class SingleWord:
 
         margin_x = (self.rect_w - word_surface.get_width()) // 2
         margin_y = (self.rect_h - word_surface.get_height()) // 2
-        
+
         pg.display.update()
         running = True
         start_time = pg.time.get_ticks()
