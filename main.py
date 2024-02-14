@@ -3,7 +3,6 @@ import sys
 
 pg.init()
 
-
 class Times:
     def __init__(self, time, position, defaultColor, activeColor) -> None:
         self.font = pg.font.SysFont("Ariel", 32)
@@ -12,7 +11,7 @@ class Times:
         self.defaultColor = defaultColor
         self.activeColor = activeColor
         self.active = False
-        self.time_limit = 30  # seconds
+        self.time_limit = 30 # seconds
         self.color = self.defaultColor
 
     def draw(self, screen):
@@ -34,7 +33,7 @@ class Times:
 
 
 class SingleWord:
-    def __init__(self):
+    def __init__(self, time_limit):
 
         self.WHITE = (255, 255, 255)
         self.RED = (255, 0, 0)
@@ -52,7 +51,7 @@ class SingleWord:
         self.rect_h = 75
         self.input_rect = pg.Rect(self.rect_x, self.rect_y, self.rect_w, self.rect_h)
         self.font = pg.font.SysFont("Roboto", 50, bold=True)
-        self.time_limit = 30
+        self.time_limit = time_limit 
         self.correct_chars = 0
         self.key_pressed = 0
         self.elapsed_time = 0
@@ -93,7 +92,7 @@ class SingleWord:
                     ) and input_text:
                         return input_text
                     elif event.key == pg.K_RETURN and not input_text:
-                        SingleWord().main()
+                        SingleWord(self.time_limit).main()
                     elif event.key == pg.K_SPACE:
                         continue
                     else:
@@ -144,8 +143,10 @@ class SingleWord:
 
         margin_x = (self.rect_w - word_surface.get_width()) // 2
         margin_y = (self.rect_h - word_surface.get_height()) // 2
-
+        
         pg.display.update()
+
+        waiting = True
         running = True
         start_time = pg.time.get_ticks()
         while running:
@@ -230,6 +231,17 @@ class SingleWord:
             self.clock.tick(self.FPS)
             pg.display.flip()
 
+            while waiting:
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        running = False
+                        waiting = False
+                    elif event.type == pg.KEYDOWN and event.unicode.isalpha():
+                        waiting = False
+                        text += event.unicode
+                        index += 1
+
+
     def result_screen(self):
         font = pg.font.SysFont("Ariel", 32)
         wpm_surface = self.font.render(str(self.wpm), True, self.NEONGREEN)
@@ -254,7 +266,7 @@ class SingleWord:
                     if event.key == pg.K_ESCAPE:
                         running = False
                     elif event.key == pg.K_RETURN:
-                        SingleWord().main()
+                        SingleWord(self.time_limit).main()
             self.screen.fill(self.BG)
             self.screen.blit(
                 wpm_surface, (wpm_x, wpm_y)
@@ -271,4 +283,4 @@ class SingleWord:
         sys.exit()
 
 
-SingleWord().main()
+SingleWord(30).main()
