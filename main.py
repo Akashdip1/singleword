@@ -1,4 +1,5 @@
 import pygame as pg
+import sys
 
 pg.init()
 
@@ -34,7 +35,6 @@ class Times:
 
 class SingleWord:
     def __init__(self):
-        self.WIDTH, self.HEIGHT = 1200, 750
 
         self.WHITE = (255, 255, 255)
         self.RED = (255, 0, 0)
@@ -45,9 +45,9 @@ class SingleWord:
         self.FPS = 60
 
         self.clock = pg.time.Clock()
-        self.screen = pg.display.set_mode((self.WIDTH, self.HEIGHT))
-        self.rect_x = self.WIDTH // 2 - 300
-        self.rect_y = self.HEIGHT // 2 - 50
+        self.screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
+        self.rect_x = self.screen.get_width()// 2 - 300
+        self.rect_y = self.screen.get_height()// 2 - 50
         self.rect_w = 600
         self.rect_h = 75
         self.input_rect = pg.Rect(self.rect_x, self.rect_y, self.rect_w, self.rect_h)
@@ -61,10 +61,10 @@ class SingleWord:
         self.wpm = 0
 
         self.shiftpos = 10
-        self.time15_pos = (self.WIDTH // 2 - 180 - self.shiftpos, self.rect_y + 200)
-        self.time30_pos = (self.WIDTH // 2 - 60, self.rect_y + 200)
-        self.time60_pos = (self.WIDTH // 2 + 60, self.rect_y + 200)
-        self.time120_pos = (self.WIDTH // 2 + 180, self.rect_y + 200)
+        self.time15_pos = (self.screen.get_width()// 2 - 180 - self.shiftpos, self.rect_y + 200)
+        self.time30_pos = (self.screen.get_width()// 2 - 60, self.rect_y + 200)
+        self.time60_pos = (self.screen.get_width()// 2 + 60, self.rect_y + 200)
+        self.time120_pos = (self.screen.get_width()// 2 + 180, self.rect_y + 200)
 
     def start_screen(self) -> str:
         running = True
@@ -80,9 +80,11 @@ class SingleWord:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     running = False
+                    sys.exit()
                 elif event.type == pg.KEYDOWN:
                     if event.key == pg.K_ESCAPE:
                         running = False
+                        sys.exit()
                     elif event.key == pg.K_BACKSPACE:
                         input_text = input_text[:-1]
                         input_index -= 1
@@ -132,7 +134,7 @@ class SingleWord:
             pg.draw.rect(self.screen, self.NEONGREEN, self.input_rect, 2, 3)
             self.clock.tick(self.FPS)
             pg.display.flip()
-
+        return ""
     def main_screen(self):
         word = self.start_screen()
         text = ""
@@ -229,10 +231,20 @@ class SingleWord:
             pg.display.flip()
 
     def result_screen(self):
-        wpm_surface = self.font.render(str(self.wpm), True, self.WHITE)
-        wpm_mar_x = (self.rect_w - wpm_surface.get_width()) // 2
-        wpm_mar_y = (self.rect_h - wpm_surface.get_height()) // 2
+        font = pg.font.SysFont("Ariel", 32)
+        wpm_surface = self.font.render(str(self.wpm), True, self.NEONGREEN)
+        wpm_x = self.screen.get_width() // 2 - 300 
+        wpm_y = self.screen.get_height() // 2 
+        wpm_text_surface = font.render("WPM", True, self.NEONGREEN)
+        wpm_text_x = wpm_x + wpm_surface.get_width() // 4 - 10 
+        wpm_text_y = wpm_y + wpm_surface.get_height() 
+
         pg.display.update()
+        
+        accuracy_surface = self.font.render(str(self.accuracy) + "%", True, self.NEONGREEN)
+        accuracy_x = wpm_x + 600
+        accuracy_y = wpm_y
+        
         running = True
         while running:
             for event in pg.event.get():
@@ -245,8 +257,10 @@ class SingleWord:
                         SingleWord().main()
             self.screen.fill(self.BG)
             self.screen.blit(
-                wpm_surface, (self.rect_x + wpm_mar_x, self.rect_y + wpm_mar_y)
+                wpm_surface, (wpm_x, wpm_y)
             )
+            self.screen.blit(wpm_text_surface, (wpm_text_x, wpm_text_y))
+            self.screen.blit(accuracy_surface, (accuracy_x, accuracy_y))
             self.clock.tick(self.FPS)
             pg.display.flip()
 
@@ -254,6 +268,7 @@ class SingleWord:
         self.main_screen()
         self.result_screen()
         pg.quit()
+        sys.exit()
 
 
 SingleWord().main()
