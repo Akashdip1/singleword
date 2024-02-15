@@ -54,6 +54,7 @@ class SingleWord:
         self.time_limit = time_limit 
         self.correct_chars = 0
         self.key_pressed = 0
+        self.start_time = 0
         self.elapsed_time = 0
         self.accuracy = 0
         self.time_left = 0
@@ -148,7 +149,6 @@ class SingleWord:
 
         waiting = True
         running = True
-        start_time = pg.time.get_ticks()
         while running:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -192,10 +192,10 @@ class SingleWord:
                 else 0
             )
             self.wpm = round(self.wpm, 1)
-            self.elapsed_time = (pg.time.get_ticks() - start_time) / 1000  # seconds
+            self.elapsed_time = (pg.time.get_ticks() - self.start_time) / 1000  # seconds
 
-            self.time_left = round((self.time_limit - self.elapsed_time), 2)
-
+            self.time_left = round((self.time_limit - self.elapsed_time), 2) 
+                                                                            
             text_surface = self.font.render(text, True, color)
             text_mar_x = (self.rect_w - text_surface.get_width()) // 2
             text_mar_y = (self.rect_h - text_surface.get_height()) // 2
@@ -240,6 +240,7 @@ class SingleWord:
                         waiting = False
                         text += event.unicode
                         index += 1
+                        self.start_time = pg.time.get_ticks()
 
 
     def result_screen(self):
