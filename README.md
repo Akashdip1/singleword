@@ -30,7 +30,7 @@ To run the Typing Game locally on your machine, follow these steps:
 1. Clone this repository to your local machine:
 
     ```bash
-    git clone https://github.com/yourusername/typing-game.git
+    git clone https://github.com/Akashdip1/singleword.git
     ```
 
 2. Navigate to the project directory:
