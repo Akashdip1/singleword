@@ -246,11 +246,15 @@ class SingleWord:
                     if event.type == pg.QUIT:
                         running = False
                         waiting = False
-                    elif event.type == pg.KEYDOWN and event.unicode.isalpha():
-                        waiting = False
-                        text += event.unicode
-                        index += 1
-                        self.start_time = pg.time.get_ticks()
+                    elif event.type == pg.KEYDOWN:
+                        if event.key == pg.K_ESCAPE:
+                            waiting = False
+                            running = False
+                        elif event.unicode.isalpha(): 
+                            waiting = False
+                            text += event.unicode
+                            index += 1
+                            self.start_time = pg.time.get_ticks()
 
     def result_screen(self):
         font = pg.font.SysFont("Ariel", 32)
@@ -279,7 +283,7 @@ class SingleWord:
                         running = False
                     elif event.key == pg.K_RETURN:
                         SingleWord(self.time_limit).main()
-                    elif event.key == pg.K_SPACE:
+                    elif event.key == pg.K_TAB:
                         SingleWord(self.time_limit, self.word).main()
             self.screen.fill(self.BG)
             self.screen.blit(wpm_surface, (wpm_x, wpm_y))
