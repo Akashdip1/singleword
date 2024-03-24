@@ -4,6 +4,7 @@ import sys
 pg.init()
 
 
+# Class for displaying and selecting time of the test
 class Times:
     def __init__(self, time, position, defaultColor, activeColor) -> None:
         self.font = pg.font.SysFont("Ariel", 32)
@@ -15,7 +16,7 @@ class Times:
         self.time_limit = 30  # seconds
         self.color = self.defaultColor
 
-    def draw(self, screen):
+    def draw(self, screen): # Draw function
         self.color = (
             self.activeColor
             if self.active or self.time_limit == int(self.text)
@@ -24,7 +25,7 @@ class Times:
         text_surface = self.font.render(self.text, True, self.color)
         screen.blit(text_surface, self.position)
 
-    def handleEvent(self, event):
+    def handleEvent(self, event): # To handle mouse clicks 
         if event.type == pg.MOUSEBUTTONDOWN:
             x, y = event.pos
             text_rect = self.font.render(self.text, True, self.defaultColor).get_rect(
@@ -32,7 +33,7 @@ class Times:
             )
             self.active = text_rect.collidepoint(x, y)
 
-
+# The main class
 class SingleWord:
     def __init__(self, time_limit, word=""):
         self.WHITE = (255, 255, 255)
@@ -44,11 +45,12 @@ class SingleWord:
         self.FPS = 60
 
         self.clock = pg.time.Clock()
-        self.screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
-        self.rect_x = self.screen.get_width() // 2 - 300
-        self.rect_y = self.screen.get_height() // 2 - 50
-        self.rect_w = 600
-        self.rect_h = 75
+        self.screen = pg.display.set_mode((0, 0), pg.FULLSCREEN) # App will always launch in fullscreen
+        self.rect_x = self.screen.get_width() // 2 - 300  #
+        self.rect_y = self.screen.get_height() // 2 - 50  #
+        self.rect_w = 600                                 # Input rectangle properties 
+        self.rect_h = 75                                  # 
+                                                          #
         self.input_rect = pg.Rect(self.rect_x, self.rect_y, self.rect_w, self.rect_h)
         self.font = pg.font.SysFont("Roboto", 50, bold=True)
         self.word = word
@@ -60,7 +62,8 @@ class SingleWord:
         self.accuracy = 0
         self.time_left = 0
         self.wpm = 0
-
+        
+        # Positions of the times
         self.shiftpos = 10
         self.time15_pos = (
             self.screen.get_width() // 2 - 180 - self.shiftpos,
@@ -70,11 +73,12 @@ class SingleWord:
         self.time60_pos = (self.screen.get_width() // 2 + 60, self.rect_y + 200)
         self.time120_pos = (self.screen.get_width() // 2 + 180, self.rect_y + 200)
 
-    def start_screen(self) -> str:
+    def start_screen(self) -> str: # First screen function will return the input word
         running = True
         input_text = ""
         input_index = 0
-
+        
+        # Initiate times
         time15 = Times("15", self.time15_pos, self.GRAY, self.NEONGREEN)
         time30 = Times("30", self.time30_pos, self.GRAY, self.NEONGREEN)
         time60 = Times("60", self.time60_pos, self.GRAY, self.NEONGREEN)
@@ -103,7 +107,8 @@ class SingleWord:
                     else:
                         char = event.unicode
                         input_text += char
-
+                        
+            # Select time
                 time15.handleEvent(event)
                 time30.handleEvent(event)
                 time60.handleEvent(event)
@@ -117,7 +122,8 @@ class SingleWord:
                 self.time_limit = 60
             elif time120.active:
                 self.time_limit = 120
-
+            
+            # Input text field
             input_text_surface = self.font.render(input_text, True, self.WHITE)
             input_text_mar_x = (self.rect_w - input_text_surface.get_width()) // 2
             input_text_mar_y = (self.rect_h - input_text_surface.get_height()) // 2
@@ -127,7 +133,8 @@ class SingleWord:
                 input_text_surface,
                 (self.rect_x + input_text_mar_x, self.rect_y + input_text_mar_y),
             )
-
+            
+            # Draw time selections and change color accordingly  
             time15.draw(self.screen)
             time30.draw(self.screen)
             time60.draw(self.screen)
@@ -140,8 +147,8 @@ class SingleWord:
             pg.display.flip()
         return ""
 
-    def main_screen(self):
-        word = self.start_screen() if not self.word else self.word
+    def main_screen(self): # Function for main typing screen 
+        word = self.start_screen() if not self.word else self.word # Word form start screen or previous test
         self.word = word
         text = ""
         color = self.WHITE
@@ -196,27 +203,30 @@ class SingleWord:
             if self.elapsed_time >= self.time_limit:
                 running = False
             if self.key_pressed > 0:
-                self.accuracy = int((self.correct_chars / self.key_pressed) * 100)
+                self.accuracy = int((self.correct_chars / self.key_pressed) * 100) # Current accuracy 
             else:
                 self.accuracy = 0
             self.wpm = (
-                (self.correct_chars / 5) / (self.elapsed_time / 60)
+                (self.correct_chars / 5) / (self.elapsed_time / 60) # Current wpm 
                 if self.elapsed_time > 0
                 else 0
             )
-            self.wpm = round(self.wpm, 1)
-
+            self.wpm = round(self.wpm, 1) # Cureent wpm
+            
+            # Parameters to display the typed text 
             text_surface = self.font.render(text, True, color)
             text_mar_x = (self.rect_w - text_surface.get_width()) // 2
             text_mar_y = (self.rect_h - text_surface.get_height()) // 2
-
+            
+            # Parameters to display accuracy 
             accuracy_surface = self.font.render(str(self.accuracy), True, self.WHITE)
             accuracy_mar_x = (self.rect_w - accuracy_surface.get_width()) // 2
             accuracy_mar_y = (self.rect_h - accuracy_surface.get_height()) // 2
-
+        
             time_surface = self.font.render(str(self.time_left), True, self.WHITE)
 
             self.screen.fill(self.BG)
+            # Display Text, accuray, wpm and time remaining 
             self.screen.blit(
                 text_surface, (self.rect_x + text_mar_x, self.rect_y + text_mar_y)
             )
@@ -256,7 +266,7 @@ class SingleWord:
                             index += 1
                             self.start_time = pg.time.get_ticks()
 
-    def result_screen(self):
+    def result_screen(self): # To show the results 
         font = pg.font.SysFont("Ariel", 32)
         wpm_surface = self.font.render(str(self.wpm), True, self.NEONGREEN)
         wpm_x = self.screen.get_width() // 2 - 300
@@ -292,7 +302,7 @@ class SingleWord:
             self.clock.tick(self.FPS)
             pg.display.flip()
 
-    def main(self):
+    def main(self): # Main function
         self.main_screen()
         self.result_screen()
         pg.quit()
